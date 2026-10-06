@@ -30,9 +30,7 @@ def test_instruction_operations():
     uid = 900002
     now = int(time.time())
 
-    client.add_instruction(
-        uid, now, "payload", 900001, "Тестовая инструкция", "test"
-    )
+    client.add_instruction(uid, now, "payload", 900001, "Тестовая инструкция", "test")
     instruction = find_record(client.get_all_instruction(), uid)
     assert instruction["uid"] == str(uid)
 
@@ -57,9 +55,7 @@ def test_response_operations():
     uid = 900003
     now = int(time.time())
 
-    client.add_response(
-        uid, now, "output", "completed", "нет ошибки", 900002, True
-    )
+    client.add_response(uid, now, "output", "completed", "нет ошибки", 900002, True)
     response = find_record(client.get_all_response(), uid)
     assert response["uid"] == str(uid)
 
@@ -99,9 +95,7 @@ def test_filtered_join():
     )
 
     result = client.filtered_join()
-    assert any(
-        item["description"] == "Обновленная инструкция" for item in result
-    )
+    assert any(item["description"] == "Обновленная инструкция" for item in result)
 
     client.delete_response(response_uid)
     client.delete_instruction(instruction_uid)

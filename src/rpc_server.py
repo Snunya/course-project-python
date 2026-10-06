@@ -2,20 +2,19 @@ import socket
 from xml.etree import ElementTree
 
 from main import (
-    add_session,
-    delete_session,
-    get_all_session,
-    update_session,
     add_instruction,
-    delete_instruction,
-    get_all_instruction,
-    update_instruction,
     add_response,
+    add_session,
+    delete_instruction,
     delete_response,
-    get_all_response,
-    update_response,
+    delete_session,
     filtered_join,
-    clear_data,
+    get_all_instruction,
+    get_all_response,
+    get_all_session,
+    update_instruction,
+    update_response,
+    update_session,
 )
 
 HOST = "127.0.0.1"
@@ -112,11 +111,7 @@ def parse_request(data: bytes) -> tuple:
 def make_response(operation: int, body: bytes) -> bytes:
     body_size = len(body)
 
-    return (
-        body_size.to_bytes(3, "little")
-        + operation.to_bytes(1, "little")
-        + body
-    )
+    return body_size.to_bytes(3, "little") + operation.to_bytes(1, "little") + body
 
 
 def add_record(root, fields, record) -> None:
@@ -196,10 +191,7 @@ ARGUMENT_CONVERTERS = {
 def get_values(body: bytes) -> list:
     arguments = ElementTree.fromstring(body)
 
-    return [
-        element.text if element.text is not None else ""
-        for element in arguments
-    ]
+    return [element.text if element.text is not None else "" for element in arguments]
 
 
 def call_operation(operation: int, values: list):
@@ -209,9 +201,7 @@ def call_operation(operation: int, values: list):
     if len(values) != len(converters):
         raise ValueError("Неверное количество аргументов")
 
-    arguments = [
-        converter(value) for converter, value in zip(converters, values)
-    ]
+    arguments = [converter(value) for converter, value in zip(converters, values)]
 
     return function(*arguments)
 
@@ -256,7 +246,7 @@ def start_server() -> None:
         server.bind((HOST, PORT))
         server.listen()
 
-        print(f"RPC server started on {HOST}:{PORT}")
+        print(f"RPC server started on {HOST}: {PORT}")
 
         while True:
             connection, _ = server.accept()

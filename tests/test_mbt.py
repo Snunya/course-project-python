@@ -6,7 +6,7 @@ from src.rpc_client import RPCClient
 
 XML_TEXT = st.text(
     alphabet=st.sampled_from(
-        list("abcdefghijklmnopqrstuvwxyz" "абвгдежзийклмнопрстуфхцчшщ")
+        list("abcdefghijklmnopqrstuvwxyzабвгдежзийклмнопрстуфхцчшщ")
     ),
     max_size=20,
 )
@@ -57,9 +57,7 @@ class RPCStateMachine(RuleBasedStateMachine):
         }
 
         instructions = self.client.get_all_instruction()
-        actual = [
-            item for item in instructions if item["uid"] == str(data["uid"])
-        ]
+        actual = [item for item in instructions if item["uid"] == str(data["uid"])]
 
         assert actual
         assert actual[-1]["created"] == str(data["created"])
@@ -136,9 +134,7 @@ class RPCStateMachine(RuleBasedStateMachine):
         }
 
         responses = self.client.get_all_response()
-        actual = [
-            item for item in responses if item["uid"] == str(data["uid"])
-        ]
+        actual = [item for item in responses if item["uid"] == str(data["uid"])]
 
         assert actual
         assert actual[-1]["created"] == str(data["created"])
