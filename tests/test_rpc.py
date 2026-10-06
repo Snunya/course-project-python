@@ -3,88 +3,127 @@ import time
 from src.rpc_client import RPCClient
 
 
+def find_record(records, uid):
+    return next(
+        record for record in records
+        if record["uid"] == str(uid)
+    )
+
+
 def test_all_rpc_operations():
     client = RPCClient()
     now = int(time.time())
 
-    client.add_session(1, now, "нет ошибки")
+    session_uid = 900001
+    instruction_uid = 900002
+    response_uid = 900003
+
+    client.add_session(
+        session_uid,
+        now,
+        "нет ошибки",
+    )
 
     sessions = client.get_all_session()
-    assert sessions[0]["uid"] == "1"
+    session = find_record(sessions, session_uid)
+    assert session["uid"] == str(session_uid)
 
     client.update_session(
-        1,
+        session_uid,
         now,
         "обновлено",
     )
 
     sessions = client.get_all_session()
-    assert sessions[0]["error"] == "обновлено"
+    session = find_record(sessions, session_uid)
+    assert session["error"] == "обновлено"
 
     client.add_instruction(
-        10,
+        instruction_uid,
         now,
         "payload",
-        1,
+        session_uid,
         "Тестовая инструкция",
         "test",
     )
 
     instructions = client.get_all_instruction()
-    assert instructions[0]["uid"] == "10"
+    instruction = find_record(instructions, instruction_uid)
+    assert instruction["uid"] == str(instruction_uid)
 
     client.update_instruction(
-        10,
+        instruction_uid,
         now,
         "updated payload",
-        1,
+        session_uid,
         "Обновленная инструкция",
         "updated",
     )
 
     instructions = client.get_all_instruction()
-    assert instructions[0]["description"] == (
+    instruction = find_record(
+        instructions,
+        instruction_uid,
+    )
+    assert instruction["description"] == (
         "Обновленная инструкция"
     )
 
     client.add_response(
-        20,
+        response_uid,
         now,
         "output",
         "completed",
         "нет ошибки",
-        10,
+        instruction_uid,
         True,
     )
 
     responses = client.get_all_response()
-    assert responses[0]["uid"] == "20"
+    response = find_record(responses, response_uid)
+    assert response["uid"] == str(response_uid)
 
     join_result = client.filtered_join()
 
-    assert join_result[0]["description"] == (
-        "Обновленная инструкция"
+    assert any(
+        item["description"] == "Обновленная инструкция"
+        for item in join_result
     )
 
     client.update_response(
-        20,
+        response_uid,
         now,
         "updated output",
         "processing",
         "ошибка",
-        10,
+        instruction_uid,
         False,
     )
 
     responses = client.get_all_response()
-    assert responses[0]["cache_hit"] == "False"
+    response = find_record(responses, response_uid)
+    assert response["cache_hit"] == "False"
 
-    client.delete_response(20)
-    assert client.get_all_response() == []
+    client.delete_response(response_uid)
 
-    client.delete_instruction(10)
-    assert client.get_all_instruction() == []
+    responses = client.get_all_response()
+    assert not any(
+        response["uid"] == str(response_uid)
+        for response in responses
+    )
 
-    client.delete_session(1)
-    assert client.get_all_session() == []
-    
+    client.delete_instruction(instruction_uid)
+
+    instructions = client.get_all_instruction()
+    assert not any(
+        instruction["uid"] == str(instruction_uid)
+        for instruction in instructions
+    )
+
+    client.delete_session(session_uid)
+
+    sessions = client.get_all_session()
+    assert not any(
+        session["uid"] == str(session_uid)
+        for session in sessions
+    )

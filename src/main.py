@@ -1,53 +1,87 @@
 import time
 
+
 response = []
 instruction = []
 session = []
 
-#---
+SIX_MINUTES = 6 * 60
+
 
 def add_session(uid: int, created: int, error: str) -> None:
+    """Создаёт новую сессию."""
     session.append([uid, created, error])
     print("Сессия создана")
 
-def delete_session(uid: int):
+
+def delete_session(uid: int) -> None:
+    """Удаляет сессию по идентификатору."""
     for i in range(len(session)):
         if session[i][0] == uid:
             session.pop(i)
             print("Сессия удалена")
             return
+
     print("Сессия не найдена")
 
+
 def get_all_session() -> list:
+    """Возвращает все сессии."""
     return session
 
+
 def update_session(uid: int, new_created: int, new_error: str) -> None:
+    """Изменяет данные сессии по идентификатору."""
     for i in range(len(session)):
         if session[i][0] == uid:
             session[i][1] = new_created
             session[i][2] = new_error
             print("Сессия успешно обновлена")
             return
-    print("Ошибка")
 
-#---
+    print("Сессия не найдена")
 
-def add_instruction(uid: int, created: int, payload: str, session_id: int, description: str, tags: str):
-    instruction.append([uid, created, payload, session_id, description, tags])
+
+def add_instruction(
+    uid: int,
+    created: int,
+    payload: str,
+    session_id: int,
+    description: str,
+    tags: str,
+) -> None:
+    """Создаёт новую инструкцию."""
+    instruction.append(
+        [uid, created, payload, session_id, description, tags]
+    )
     print("Инструкция создана")
 
-def delete_instruction(uid: int):
+
+def delete_instruction(uid: int) -> None:
+    """Удаляет инструкцию по идентификатору."""
     for i in range(len(instruction)):
         if instruction[i][0] == uid:
             instruction.pop(i)
             print("Инструкция удалена")
             return
+
     print("Инструкция не найдена")
 
+
 def get_all_instruction() -> list:
+    """Возвращает все инструкции."""
     return instruction
 
-def update_instruction(uid: int, new_created: int, new_payload: str, new_session: int, new_description: str, new_tags: str) -> None:
+
+def update_instruction(
+    uid: int,
+    new_created: int,
+    new_payload: str,
+    new_session: int,
+    new_description: str,
+    new_tags: str,
+) -> None:
+    """Изменяет данные инструкции по идентификатору."""
     for i in range(len(instruction)):
         if instruction[i][0] == uid:
             instruction[i][1] = new_created
@@ -57,26 +91,52 @@ def update_instruction(uid: int, new_created: int, new_payload: str, new_session
             instruction[i][5] = new_tags
             print("Инструкция успешно обновлена")
             return
-    print("Ошибка")
 
-#---
+    print("Инструкция не найдена")
 
-def add_response(uid: int, created: int, output: str, stage: str, error: str, instruction_id: int, cache_hit: bool) -> None:
-    response.append([uid, created, output, stage, error, instruction_id, cache_hit])
+
+def add_response(
+    uid: int,
+    created: int,
+    output: str,
+    stage: str,
+    error: str,
+    instruction_id: int,
+    cache_hit: bool,
+) -> None:
+    """Создаёт новый ответ."""
+    response.append(
+        [uid, created, output, stage, error, instruction_id, cache_hit]
+    )
     print("Ответ создан")
 
-def delete_response(uid: int):
+
+def delete_response(uid: int) -> None:
+    """Удаляет ответ по идентификатору."""
     for i in range(len(response)):
         if response[i][0] == uid:
             response.pop(i)
             print("Ответ удален")
             return
+
     print("Ответ не найден")
 
+
 def get_all_response() -> list:
+    """Возвращает все ответы."""
     return response
 
-def update_response(uid: int, new_created: int, new_output: str, new_stage: str, new_error: str, new_instruction: int, new_cache_hit: bool) -> None:
+
+def update_response(
+    uid: int,
+    new_created: int,
+    new_output: str,
+    new_stage: str,
+    new_error: str,
+    new_instruction: int,
+    new_cache_hit: bool,
+) -> None:
+    """Изменяет данные ответа по идентификатору."""
     for i in range(len(response)):
         if response[i][0] == uid:
             response[i][1] = new_created
@@ -87,79 +147,195 @@ def update_response(uid: int, new_created: int, new_output: str, new_stage: str,
             response[i][6] = new_cache_hit
             print("Ответ успешно обновлен")
             return
-    print("Ошибка")
 
-#---
+    print("Ответ не найден")
 
-def filtered_join():
+
+def filtered_join() -> list:
+    """Возвращает выборку Instruction и Response за последние 6 минут."""
     current_time = int(time.time())
     result = []
 
-    for r in response:
-        r_uid, r_creat, r_out, r_stage, r_err, r_inst, r_cache = r
+    for current_response in response:
+        (
+            response_uid,
+            response_created,
+            response_output,
+            response_stage,
+            response_error,
+            response_instruction,
+            response_cache,
+        ) = current_response
 
-        if r_creat >= (current_time - 360):
-            for inst in instruction:
-                i_uid, i_creat, i_payload, i_sess, i_desc, i_tags = inst
+        if response_created >= current_time - SIX_MINUTES:
+            for current_instruction in instruction:
+                (
+                    instruction_uid,
+                    instruction_created,
+                    instruction_payload,
+                    instruction_session,
+                    instruction_description,
+                    instruction_tags,
+                ) = current_instruction
 
-                if i_uid == r_inst:
-                    result.append([i_desc, r_cache, r_stage])
-    return result  # Исправлено: теперь возвращаем собранный результат!
+                if instruction_uid == response_instruction:
+                    result.append(
+                        [
+                            instruction_description,
+                            response_cache,
+                            response_stage,
+                        ]
+                    )
 
-#---
+    return result
 
-def main():
+
+def parse_bool(value: str) -> bool:
+    """Преобразует строковое значение в логическое."""
+    value = value.lower()
+
+    if value == "true":
+        return True
+    if value == "false":
+        return False
+
+    raise ValueError
+
+
+def process_session_command(cmd: list[str]) -> None:
+    """Обрабатывает команды для работы с сессиями."""
+    action = cmd[0]
+
+    if action == "add_session":
+        add_session(int(cmd[1]), int(cmd[2]), cmd[3])
+    elif action == "show_sessions":
+        print(get_all_session())
+    elif action == "update_session":
+        update_session(int(cmd[1]), int(cmd[2]), cmd[3])
+    elif action == "delete_session":
+        delete_session(int(cmd[1]))
+
+
+def process_instruction_command(cmd: list[str]) -> None:
+    """Обрабатывает команды для работы с инструкциями."""
+    action = cmd[0]
+
+    if action == "add_instruction":
+        add_instruction(
+            int(cmd[1]),
+            int(cmd[2]),
+            cmd[3],
+            int(cmd[4]),
+            cmd[5],
+            cmd[6],
+        )
+    elif action == "show_instructions":
+        print(get_all_instruction())
+    elif action == "update_instruction":
+        update_instruction(
+            int(cmd[1]),
+            int(cmd[2]),
+            cmd[3],
+            int(cmd[4]),
+            cmd[5],
+            cmd[6],
+        )
+    elif action == "delete_instruction":
+        delete_instruction(int(cmd[1]))
+
+
+def process_response_command(cmd: list[str]) -> None:
+    """Обрабатывает команды для работы с ответами."""
+    action = cmd[0]
+
+    if action == "add_response":
+        add_response(
+            int(cmd[1]),
+            int(cmd[2]),
+            cmd[3],
+            cmd[4],
+            cmd[5],
+            int(cmd[6]),
+            parse_bool(cmd[7]),
+        )
+    elif action == "show_responses":
+        print(get_all_response())
+    elif action == "update_response":
+        update_response(
+            int(cmd[1]),
+            int(cmd[2]),
+            cmd[3],
+            cmd[4],
+            cmd[5],
+            int(cmd[6]),
+            parse_bool(cmd[7]),
+        )
+    elif action == "delete_response":
+        delete_response(int(cmd[1]))
+
+
+def process_command(cmd: list[str]) -> None:
+    """Обрабатывает одну команду REPL."""
+    action = cmd[0]
+
+    if action == "exit":
+        raise SystemExit
+
+    if action in {
+        "add_session",
+        "show_sessions",
+        "update_session",
+        "delete_session",
+    }:
+        process_session_command(cmd)
+    elif action in {
+        "add_instruction",
+        "show_instructions",
+        "update_instruction",
+        "delete_instruction",
+    }:
+        process_instruction_command(cmd)
+    elif action in {
+        "add_response",
+        "show_responses",
+        "update_response",
+        "delete_response",
+    }:
+        process_response_command(cmd)
+    elif action == "join":
+        print("Результат выборки:", filtered_join())
+    else:
+        print("Неизвестная команда.")
+
+
+def main() -> None:
+    """Запускает интерактивный режим работы с моделью."""
     print("Практическая работа №1. Вариант 2")
     print("Введите команду (например: show_sessions, join, exit)")
 
     while True:
-        cmd = input(">> ").split()
-        if not cmd:
-            continue
+        try:
+            cmd = input(">> ").split()
 
-        action = cmd[0]
+            if not cmd:
+                continue
 
-        if action == "exit":
+            process_command(cmd)
+        except (ValueError, IndexError):
+            print("Ошибка: неверный формат команды.")
+        except EOFError:
+            print()
+            break
+        except KeyboardInterrupt:
+            print()
             break
 
-        # Сессии команды
-        elif action == "add_session":
-            add_session(int(cmd[1]), int(cmd[2]), cmd[3])
-        elif action == "show_sessions":
-            print(get_all_session())
-        elif action == "update_session":
-            update_session(int(cmd[1]), int(cmd[2]), cmd[3])
-        elif action == "delete_session":
-            delete_session(int(cmd[1]))
-
-        # Инструкции команды
-        elif action == "add_instruction":
-            add_instruction(int(cmd[1]), int(cmd[2]), cmd[3], int(cmd[4]), cmd[5], cmd[6])
-        elif action == "show_instructions":
-            print(get_all_instruction())
-        elif action == "update_instruction":
-            update_instruction(int(cmd[1]), int(cmd[2]), cmd[3], int(cmd[4]), cmd[5], cmd[6])
-        elif action == "delete_instruction":
-            delete_instruction(int(cmd[1]))
-
-        # Ответы команды
-        elif action == "add_response":
-            cache = True if cmd[7].lower() == 'true' else False
-            add_response(int(cmd[1]), int(cmd[2]), cmd[3], cmd[4], cmd[5], int(cmd[6]), cache)
-        elif action == "show_responses":
-            print(get_all_response())
-        elif action == "update_response":
-            cache = True if cmd[7].lower() == 'true' else False
-            update_response(int(cmd[1]), int(cmd[2]), cmd[3], cmd[4], cmd[5], int(cmd[6]), cache)
-        elif action == "delete_response":
-            delete_response(int(cmd[1]))
-
-        # Спец-выборка по варианту
-        elif action == "join":
-            print("Результат выборки:", filtered_join())
-
-        else:
-            print("Неизвестная команда.")
 
 if __name__ == "__main__":
     main()
+
+def clear_data() -> None:
+    session.clear()
+    instruction.clear()
+    response.clear()
+    

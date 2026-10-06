@@ -56,7 +56,9 @@ def parse_xml(body: bytes) -> list | dict:
         values = {}
 
         for element in record:
-            values[element.tag] = element.text
+            values[element.tag] = (
+                element.text if element.text is not None else ""
+            )
 
         result.append(values)
 
@@ -105,10 +107,9 @@ class RPCClient:
         body = make_xml("request", data)
         request = build_request(operation, body)
 
-        with socket.create_connection(
-            (self.host, self.port)
-        ) as connection:
+        with socket.create_connection((self.host, self.port)) as connection:
             connection.sendall(request)
+            connection.shutdown(socket.SHUT_WR)
 
             header = self.receive_all(connection, 4)
             body_size = int.from_bytes(

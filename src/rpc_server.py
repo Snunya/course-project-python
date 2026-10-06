@@ -15,6 +15,7 @@ from main import (
     get_all_response,
     update_response,
     filtered_join,
+    clear_data,
 )
 
 
@@ -197,7 +198,7 @@ def get_values(body: bytes) -> list:
     arguments = ElementTree.fromstring(body)
 
     return [
-        element.text
+        element.text if element.text is not None else ""
         for element in arguments
     ]
 
