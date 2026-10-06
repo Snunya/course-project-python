@@ -104,7 +104,7 @@ def parse_request(data: bytes) -> tuple:
     version = data[0]
     operation = int.from_bytes(data[1:3], "little")
     body_size = int.from_bytes(data[3:6], "little")
-    body = data[REQUEST_HEADER_SIZE : REQUEST_HEADER_SIZE + body_size]
+    body = data[REQUEST_HEADER_SIZE: REQUEST_HEADER_SIZE + body_size]
 
     return version, operation, body
 
@@ -256,7 +256,7 @@ def start_server() -> None:
         server.bind((HOST, PORT))
         server.listen()
 
-        print(f"RPC server started on {HOST}:{PORT}")
+        print(f"RPC server started on {HOST}: {PORT}")
 
         while True:
             connection, _ = server.accept()
