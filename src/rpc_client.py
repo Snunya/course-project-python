@@ -55,7 +55,9 @@ def parse_xml(body: bytes) -> list | dict:
         values = {}
 
         for element in record:
-            values[element.tag] = element.text if element.text is not None else ""
+            values[element.tag] = (
+                element.text if element.text is not None else ""
+            )
 
         result.append(values)
 

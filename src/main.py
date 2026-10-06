@@ -95,7 +95,9 @@ def add_response(
     instruction_id: int,
     cache_hit: bool,
 ) -> None:
-    response.append([uid, created, output, stage, error, instruction_id, cache_hit])
+    response.append(
+        [uid, created, output, stage, error, instruction_id, cache_hit]
+    )
     print("Ответ создан")
 
 
