@@ -7,6 +7,12 @@ session = []
 RECENT_INTERVAL = 6 * 60
 
 
+def clear_data():
+    response.clear()
+    instruction.clear()
+    session.clear()
+
+
 def add_session(uid: int, created: int, error: str) -> None:
     session.append([uid, created, error])
     print("Сессия создана")
@@ -43,9 +49,7 @@ def add_instruction(
     description: str,
     tags: str,
 ) -> None:
-    instruction.append(
-        [uid, created, payload, session_id, description, tags]
-    )
+    instruction.append([uid, created, payload, session_id, description, tags])
     print("Инструкция создана")
 
 

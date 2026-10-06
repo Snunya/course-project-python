@@ -1,7 +1,6 @@
 import socket
 from xml.etree import ElementTree
 
-
 HOST = "127.0.0.1"
 PORT = 5000
 
@@ -234,9 +233,9 @@ class RPCClient:
         output: str,
         stage: str,
         error: str,
-        instruction_id: int,
-        cache_hit: bool,
+        *response_data,
     ) -> list | dict:
+        instruction_id, cache_hit = response_data
         return self.call(
             OPERATIONS["add_response"],
             {
@@ -269,9 +268,9 @@ class RPCClient:
         output: str,
         stage: str,
         error: str,
-        instruction_id: int,
-        cache_hit: bool,
+        *response_data,
     ) -> list | dict:
+        instruction_id, cache_hit = response_data
         return self.call(
             OPERATIONS["update_response"],
             {

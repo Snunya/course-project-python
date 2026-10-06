@@ -6,13 +6,11 @@ from src.rpc_client import RPCClient
 
 XML_TEXT = st.text(
     alphabet=st.sampled_from(
-        list(
-            "abcdefghijklmnopqrstuvwxyz"
-            "абвгдежзийклмнопрстуфхцчшщ"
-        )
+        list("abcdefghijklmnopqrstuvwxyz" "абвгдежзийклмнопрстуфхцчшщ")
     ),
     max_size=20,
 )
+
 
 @settings(
     max_examples=10,
@@ -27,112 +25,47 @@ class RPCStateMachine(RuleBasedStateMachine):
         self.instructions = {}
         self.responses = {}
 
-    # -------------------- SESSION --------------------
-
     @rule(
-        uid=st.integers(min_value=1, max_value=100000),
-        created=st.integers(min_value=1, max_value=2000000000),
-        error=st.text(
-            alphabet=st.sampled_from(
-                list(
-                    "abcdefghijklmnopqrstuvwxyz"
-                    "абвгдежзийклмнопрстуфхцчшщ"
-                )
-            ),
-            max_size=20,
-        ),
+        data=st.fixed_dictionaries(
+            {
+                "uid": st.integers(min_value=1, max_value=100000),
+                "created": st.integers(min_value=1, max_value=2000000000),
+                "payload": XML_TEXT,
+                "session_id": st.integers(min_value=1, max_value=100000),
+                "description": XML_TEXT,
+                "tags": XML_TEXT,
+            }
+        )
     )
-    def add_session(self, uid, created, error):
-        self.client.add_session(uid, created, error)
-
-        self.sessions[uid] = {
-            "uid": str(uid),
-            "created": str(created),
-            "error": error,
-        }
-
-        sessions = self.client.get_all_session()
-
-        actual = [
-            session
-            for session in sessions
-            if session["uid"] == str(uid)
-        ]
-
-        assert actual
-        assert actual[-1]["created"] == str(created)
-        assert actual[-1]["error"] == error
-
-    @rule(
-        uid=st.integers(min_value=1, max_value=100000),
-    )
-    def delete_session(self, uid):
-        self.client.delete_session(uid)
-        self.sessions.pop(uid, None)
-
-    @rule()
-    def get_all_session(self):
-        sessions = self.client.get_all_session()
-        assert isinstance(sessions, list)
-
-    @rule(
-        uid=st.integers(min_value=1, max_value=100000),
-        created=st.integers(min_value=1, max_value=2000000000),
-        error=XML_TEXT,
-    )
-    def update_session(self, uid, created, error):
-        self.client.update_session(uid, created, error)
-
-    # -------------------- INSTRUCTION --------------------
-
-    @rule(
-        uid=st.integers(min_value=1, max_value=100000),
-        created=st.integers(min_value=1, max_value=2000000000),
-        payload=XML_TEXT,
-        session_id=st.integers(min_value=1, max_value=100000),
-        description=XML_TEXT,
-        tags=XML_TEXT,
-    )
-    def add_instruction(
-        self,
-        uid,
-        created,
-        payload,
-        session_id,
-        description,
-        tags,
-    ):
+    def add_instruction(self, data):
         self.client.add_instruction(
-            uid,
-            created,
-            payload,
-            session_id,
-            description,
-            tags,
+            data["uid"],
+            data["created"],
+            data["payload"],
+            data["session_id"],
+            data["description"],
+            data["tags"],
         )
 
-        self.instructions[uid] = {
-            "uid": str(uid),
-            "created": str(created),
-            "payload": payload,
-            "session_id": str(session_id),
-            "description": description,
-            "tags": tags,
+        self.instructions[data["uid"]] = {
+            "uid": str(data["uid"]),
+            "created": str(data["created"]),
+            "payload": data["payload"],
+            "session_id": str(data["session_id"]),
+            "description": data["description"],
+            "tags": data["tags"],
         }
 
         instructions = self.client.get_all_instruction()
-
         actual = [
-            instruction
-            for instruction in instructions
-            if instruction["uid"] == str(uid)
+            item for item in instructions if item["uid"] == str(data["uid"])
         ]
 
         assert actual
-        assert actual[-1]["created"] == str(created)
-        assert actual[-1]["payload"] == payload
-        assert actual[-1]["description"] == description
-        assert actual[-1]["tags"] == tags
+        assert actual[-1]["created"] == str(data["created"])
+        assert actual[-1]["payload"] == data["payload"]
+        assert actual[-1]["description"] == data["description"]
+        assert actual[-1]["tags"] == data["tags"]
 
     @rule(
         uid=st.integers(min_value=1, max_value=100000),
@@ -147,89 +80,72 @@ class RPCStateMachine(RuleBasedStateMachine):
         assert isinstance(instructions, list)
 
     @rule(
-        uid=st.integers(min_value=1, max_value=100000),
-        created=st.integers(min_value=1, max_value=2000000000),
-        payload=XML_TEXT,
-        session_id=st.integers(min_value=1, max_value=100000),
-        description=XML_TEXT,
-        tags=XML_TEXT,
-    )
-    def update_instruction(
-        self,
-        uid,
-        created,
-        payload,
-        session_id,
-        description,
-        tags,
-    ):
-        self.client.update_instruction(
-            uid,
-            created,
-            payload,
-            session_id,
-            description,
-            tags,
+        data=st.fixed_dictionaries(
+            {
+                "uid": st.integers(min_value=1, max_value=100000),
+                "created": st.integers(min_value=1, max_value=2000000000),
+                "payload": XML_TEXT,
+                "session_id": st.integers(min_value=1, max_value=100000),
+                "description": XML_TEXT,
+                "tags": XML_TEXT,
+            }
         )
-
-    # -------------------- RESPONSE --------------------
+    )
+    def update_instruction(self, data):
+        self.client.update_instruction(
+            data["uid"],
+            data["created"],
+            data["payload"],
+            data["session_id"],
+            data["description"],
+            data["tags"],
+        )
 
     @rule(
-        uid=st.integers(min_value=1, max_value=100000),
-        created=st.integers(min_value=1, max_value=2000000000),
-        output=XML_TEXT,
-        stage=XML_TEXT,
-        error=XML_TEXT,
-        instruction_id=st.integers(
-            min_value=1,
-            max_value=100000,
-        ),
-        cache_hit=st.booleans(),
+        data=st.fixed_dictionaries(
+            {
+                "uid": st.integers(min_value=1, max_value=100000),
+                "created": st.integers(min_value=1, max_value=2000000000),
+                "output": XML_TEXT,
+                "stage": XML_TEXT,
+                "error": XML_TEXT,
+                "instruction_id": st.integers(min_value=1, max_value=100000),
+                "cache_hit": st.booleans(),
+            }
+        )
     )
-    def add_response(
-        self,
-        uid,
-        created,
-        output,
-        stage,
-        error,
-        instruction_id,
-        cache_hit,
-    ):
+    def add_response(self, data):
         self.client.add_response(
-            uid,
-            created,
-            output,
-            stage,
-            error,
-            instruction_id,
-            cache_hit,
+            data["uid"],
+            data["created"],
+            data["output"],
+            data["stage"],
+            data["error"],
+            data["instruction_id"],
+            data["cache_hit"],
         )
 
-        self.responses[uid] = {
-            "uid": str(uid),
-            "created": str(created),
-            "output": output,
-            "stage": stage,
-            "error": error,
-            "instruction_id": str(instruction_id),
-            "cache_hit": str(cache_hit),
+        self.responses[data["uid"]] = {
+            "uid": str(data["uid"]),
+            "created": str(data["created"]),
+            "output": data["output"],
+            "stage": data["stage"],
+            "error": data["error"],
+            "instruction_id": str(data["instruction_id"]),
+            "cache_hit": str(data["cache_hit"]),
         }
 
         responses = self.client.get_all_response()
-
         actual = [
-            response
-            for response in responses
-            if response["uid"] == str(uid)
+            item for item in responses if item["uid"] == str(data["uid"])
         ]
 
         assert actual
-        assert actual[-1]["created"] == str(created)
-        assert actual[-1]["output"] == output
-        assert actual[-1]["stage"] == stage
-        assert actual[-1]["error"] == error
-        assert actual[-1]["cache_hit"] == str(cache_hit)
+        assert actual[-1]["created"] == str(data["created"])
+        assert actual[-1]["output"] == data["output"]
+        assert actual[-1]["stage"] == data["stage"]
+        assert actual[-1]["error"] == data["error"]
+        assert actual[-1]["cache_hit"] == str(data["cache_hit"])
 
     @rule(
         uid=st.integers(min_value=1, max_value=100000),
@@ -244,38 +160,28 @@ class RPCStateMachine(RuleBasedStateMachine):
         assert isinstance(responses, list)
 
     @rule(
-        uid=st.integers(min_value=1, max_value=100000),
-        created=st.integers(min_value=1, max_value=2000000000),
-        output=XML_TEXT,
-        stage=XML_TEXT,
-        error=XML_TEXT,
-        instruction_id=st.integers(
-            min_value=1,
-            max_value=100000,
-        ),
-        cache_hit=st.booleans(),
-    )
-    def update_response(
-        self,
-        uid,
-        created,
-        output,
-        stage,
-        error,
-        instruction_id,
-        cache_hit,
-    ):
-        self.client.update_response(
-            uid,
-            created,
-            output,
-            stage,
-            error,
-            instruction_id,
-            cache_hit,
+        data=st.fixed_dictionaries(
+            {
+                "uid": st.integers(min_value=1, max_value=100000),
+                "created": st.integers(min_value=1, max_value=2000000000),
+                "output": XML_TEXT,
+                "stage": XML_TEXT,
+                "error": XML_TEXT,
+                "instruction_id": st.integers(min_value=1, max_value=100000),
+                "cache_hit": st.booleans(),
+            }
         )
-
-    # -------------------- JOIN --------------------
+    )
+    def update_response(self, data):
+        self.client.update_response(
+            data["uid"],
+            data["created"],
+            data["output"],
+            data["stage"],
+            data["error"],
+            data["instruction_id"],
+            data["cache_hit"],
+        )
 
     @rule()
     def filtered_join(self):

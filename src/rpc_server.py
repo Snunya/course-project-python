@@ -18,7 +18,6 @@ from main import (
     clear_data,
 )
 
-
 HOST = "127.0.0.1"
 PORT = 5000
 VERSION = 1
@@ -105,7 +104,7 @@ def parse_request(data: bytes) -> tuple:
     version = data[0]
     operation = int.from_bytes(data[1:3], "little")
     body_size = int.from_bytes(data[3:6], "little")
-    body = data[REQUEST_HEADER_SIZE:REQUEST_HEADER_SIZE + body_size]
+    body = data[REQUEST_HEADER_SIZE : REQUEST_HEADER_SIZE + body_size]
 
     return version, operation, body
 
@@ -211,8 +210,7 @@ def call_operation(operation: int, values: list):
         raise ValueError("Неверное количество аргументов")
 
     arguments = [
-        converter(value)
-        for converter, value in zip(converters, values)
+        converter(value) for converter, value in zip(converters, values)
     ]
 
     return function(*arguments)
